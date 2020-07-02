@@ -47,7 +47,7 @@ func getURLFromFile(file string) ([]string, error) {
 		return returnURLs, err
 	}
 	// Get value from cell by given worksheet name and axis.
-	rows, err := f.GetRows("FDA-Warning-Letters-2-Parse-Json")
+	rows, err := f.GetRows("")
 	for _, row := range rows {
 		for i, colCell := range row {
 			if i == 3 {
