@@ -1,20 +1,19 @@
 package cmd
+
 import (
-	"context"
 	"fmt"
-	"os/exec"
-	"path"
-	"time"
-	"github.com/spf13/cobra"
 	"os"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/spf13/cobra"
+
+	"github.com/epyphite/html2pdf/pkg/models"
+	"github.com/epyphite/html2pdf/pkg/service"
+	"github.com/epyphite/html2pdf/pkg/utils"
 )
 
-
 var rootCmd = &cobra.Command{
-	Use:   "go-h2pdf",
-	Short: "go Html to pdf",
+	Use:   "h2pdf",
+	Short: "GO Html to pdf",
 	Long:  ``,
 	RunE:  runHTML2PDF,
 }
@@ -27,93 +26,42 @@ func Execute() {
 	}
 }
 
-
-var url string 
-var config string
+var url string
+var configFile string
 var storeFolder string
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&url, "url", "", "download a single url")
 	rootCmd.PersistentFlags().StringVar(&storeFolder, "storeFolder", "", "Specify a storage location")
-
-}
-
-
-func getURLFromFile(file string) ([]string, error) {
-	var returnURLs []string
-	f, err := excelize.OpenFile(file)
-	if err != nil {
-		fmt.Println(err)
-		return returnURLs, err
-	}
-	// Get value from cell by given worksheet name and axis.
-	rows, err := f.GetRows("")
-	for _, row := range rows {
-		for i, colCell := range row {
-			if i == 3 {
-				returnURLs = append(returnURLs, colCell)
-			}
-		}
-	}
-
-	return returnURLs, err
-}
-
-func getURL(url string) {
-	fmt.Println("Getting URL ", url)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
-	defer cancel()
-	fname := storeFolder +"/" + path.Base(url) + ".pdf"
-	cmd := exec.CommandContext(
-		ctx,
-		"latest/chrome",
-		//	"--no-sandbox",
-		"--disable-gpu",
-		//	"--virtual-time-budget=2000",
-		//	"--timeout=6000",
-		"--headless",
-		fmt.Sprintf("--print-to-pdf=%s", fname),
-		fmt.Sprintf(
-			"%s", url),
-	)
-
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func setup(storeFolder string) {
-
-	if storeFolder == "" {
-		storeFolder = "./pdfStore/"
-	}
-	_, err := os.Stat(storeFolder)
-	if err != nil {
-		os.IsNotExist(err)
-	}
-	err = os.Mkdir(storeFolder, 0770)
-	if err != nil {
-		fmt.Println((err))
-	}
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Specify a configuration file")
 
 }
 
 func runHTML2PDF(cmd *cobra.Command, args []string) error {
 
-	setup(storeFolder)
+	var config models.Config
+	var srv service.HTML2PDF
 	var err error
-	if url != "" {
-		getURL(url)
+
+	if configFile == "" {
+		config, err = utils.LoadConfigurationDefaults()
+
+	} else {
+		config, err = utils.LoadConfiguration(configFile)
+
 	}
-	if config != "" {
-		urls, err := getURLFromFile(config)
+	srv.Setup(config)
+
+	if url != "" {
+		srv.GetURL(url)
+	}
+	if configFile != "" {
+		urls, err := srv.GetURLFromFile()
 		if err != nil {
 			return err
 		}
 		for _, url := range urls {
-			getURL(url)
+			srv.GetURL(url)
 		}
 	}
 	return err
