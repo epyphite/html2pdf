@@ -1,5 +1,5 @@
 TIME=$(shell date +"%Y%m%d.%H%M%S")
-VERSION=0.0.1-alpha-0.2
+VERSION=0.1-alpha
 BINARY_NAME=html2pdf
 
 BINARY_NAME_SERVER=html2pdf
@@ -38,4 +38,19 @@ build/html2pdf-linux:
 
 package:
 	cp install.sh $(BUILD_FOLDER)/dist/linux/
+	cp cfg/sample.cfg $(BUILD_FOLDER)/dist/linux/
+	cd build/dist/ && tar zcvf linux-dist.tar.gz linux/
+	cd build/dist/ && zip -9 linux-dist.zip -r linux/
 
+
+build/dev: build/html2pdf-linux package
+
+
+	
+distribute: 
+	./release.sh ${VERSION} ${TIME}
+
+
+
+clean:
+	rm -Rvf build/dist/

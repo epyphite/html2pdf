@@ -3,3 +3,4 @@ data/
 third-party/
 build/
 main
+.env
