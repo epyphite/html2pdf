@@ -2,8 +2,9 @@
 
 ![Cover](images/htmlpdf10.png)
 
-## OS Ubuntu Dependencies 
-```
+## OS Ubuntu Dependencies for Chrome Browser
+
+```bash
 sudo apt-get install -y libatk-bridge2.0-0 libgtk-3.0
 
 
