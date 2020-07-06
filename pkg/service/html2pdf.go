@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
+	storage "github.com/epyphite/html2pdf/pkg/lib/storage"
 	"github.com/epyphite/html2pdf/pkg/models"
 )
 
@@ -58,6 +59,11 @@ func (H2 *HTML2PDF) GetURLFromFile() ([]string, error) {
 				}
 			}
 		}
+	} else if H2.Config.SourceType == "single" {
+		returnURLs = append(returnURLs, H2.Config.SourceName)
+
+	} else if H2.Config.SourceType == "JSON" {
+
 	}
 
 	return returnURLs, err
@@ -84,4 +90,30 @@ func (H2 *HTML2PDF) GetURL(url string) {
 	if err != nil {
 		log.Println(err)
 	}
+
+	if H2.Config.EnableCloud == true {
+		H2.SaveToS3(fname)
+	}
+}
+
+//SaveToS3 moves the file to desire bucket
+func (H2 *HTML2PDF) SaveToS3(filepath string) error {
+
+	f, err := storage.GetFile(filepath)
+	defer f.Close()
+
+	if err != nil {
+		log.Println(err)
+	}
+	s, err := storage.NewSession(H2.Config.CloudRegion)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = storage.AddFileToS3(s, f, H2.Config.CloudStorage, H2.Config.CloudDestination)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
 }

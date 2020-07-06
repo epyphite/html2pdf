@@ -8,4 +8,10 @@ type Config struct {
 	SourceName        string `json:"source_name"`
 	TabName           string `json:"tab_name"`
 	ColumnNumber      string `json:"column_number"`
+	EnableCloud       bool   `json:"enablecloud"`
+	CloudProvider     string `json:"cloudprovider"`
+	CloudRegion       string `json:"cloudregion"`
+	CloudStorage      string `json:"cloudstorage"`     //Bucket or Root Key folder
+	CloudDestination  string `json:"clouddestination"` //Folder or Path
+
 }
